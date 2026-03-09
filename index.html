@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e3366">
+<title>CPM — Historia Clínica</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #1e3366;
+    --azul-claro: #2a4a8f;
+    --verde: #22c55e;
+    --verde-oscuro: #16a34a;
+    --rojo: #ef4444;
+    --rojo-oscuro: #dc2626;
+    --gris: #f1f5f9;
+    --gris-borde: #e2e8f0;
+    --texto: #0f172a;
+    --texto-suave: #64748b;
+    --blanco: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    color: var(--texto);
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--azul);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(30,51,102,0.3);
+  }
+
+  .logo-dots {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blanco);
+    letter-spacing: 0.3px;
+  }
+
+  .header-text p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    background: var(--verde);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--verde);
+    border-radius: 2px;
+    display: block;
+  }
+
+  /* FIELDS */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .field input, .field select {
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--texto);
+    background: var(--gris);
+    transition: all 0.2s;
+    outline: none;
+    width: 100%;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--azul);
+    background: var(--blanco);
+    box-shadow: 0 0 0 3px rgba(30,51,102,0.08);
+  }
+
+  .field input[readonly] {
+    background: #e8f5e9;
+    color: var(--verde-oscuro);
+    font-weight: 600;
+    border-color: #bbf7d0;
+    cursor: default;
+  }
+
+  /* FECHA BADGE */
+  .fecha-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #e8f5e9;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .fecha-display span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--verde-oscuro);
+  }
+
+  .fecha-display .fecha-icon {
+    font-size: 16px;
+  }
+
+  /* MÉDICO GUARDADO */
+  .medico-saved {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+
+  .medico-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--azul);
+  }
+
+  .medico-info p {
+    font-size: 12px;
+    color: var(--texto-suave);
+    margin-top: 2px;
+  }
+
+  .btn-cambiar {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--azul-claro);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  /* GRABADOR */
+  .grabador {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .wave-container {
+    height: 80px;
+    background: var(--azul);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 20px;
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .wave-container.activo {
+    opacity: 1;
+  }
+
+  .wave-bar {
+    width: 3px;
+    background: var(--verde);
+    border-radius: 3px;
+    min-height: 4px;
+    transition: height 0.05s ease;
+  }
+
+  .wave-status {
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+
+  .wave-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--rojo);
+    border-radius: 50%;
+    animation: pulso 1s infinite;
+  }
+
+  @keyframes pulso {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .btn-grabar {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-grabar.idle {
+    background: var(--azul);
+    color: white;
+  }
+
+  .btn-grabar.idle:hover {
+    background: var(--azul-claro);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(30,51,102,0.3);
+  }
+
+  .btn-grabar.grabando {
+    background: var(--rojo);
+    color: white;
+    animation: pulso-btn 2s infinite;
+  }
+
+  @keyframes pulso-btn {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+  }
+
+  .btn-grabar.procesando {
+    background: #f59e0b;
+    color: white;
+    cursor: not-allowed;
+  }
+
+  .btn-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* TEXTO EVOLUCIÓN */
+  .evolucion-area {
+    position: relative;
+  }
+
+  textarea#evolucion {
+    width: 100%;
+    min-height: 160px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--texto);
+    background: var(--gris);
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  textarea#evolucion:focus {
+    border-color: var(--azul);
+    background: var(--blanco);
+    box-shadow: 0 0 0 3px rgba(30,51,102,0.08);
+  }
+
+  textarea#evolucion::placeholder {
+    color: #cbd5e1;
+    font-family: 'DM Sans', sans-serif;
+    font-style: italic;
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: var(--texto-suave);
+    margin-top: 6px;
+  }
+
+  /* ADJUNTOS */
+  .adjuntos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .adjunto-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid var(--gris-borde);
+    background: var(--gris);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .adjunto-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .adjunto-item .pdf-icon {
+    font-size: 28px;
+  }
+
+  .adjunto-item .btn-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    background: var(--rojo);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .adjunto-item .pdf-name {
+    font-size: 9px;
+    color: var(--texto-suave);
+    text-align: center;
+    padding: 4px;
+    word-break: break-all;
+  }
+
+  .btn-adjuntar {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: 2px dashed var(--gris-borde);
+    background: var(--gris);
+    color: var(--texto-suave);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-adjuntar:hover {
+    border-color: var(--azul);
+    color: var(--azul);
+    background: #eff6ff;
+  }
+
+  input[type="file"] { display: none; }
+
+  /* BOTÓN ENVIAR */
+  .btn-enviar {
+    width: 100%;
+    padding: 18px;
+    background: var(--verde);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.3);
+  }
+
+  .btn-enviar:hover {
+    background: var(--verde-oscuro);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(34,197,94,0.4);
+  }
+
+  .btn-enviar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--azul);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.success { background: var(--verde-oscuro); }
+  .toast.error { background: var(--rojo-oscuro); }
+
+  /* MODAL MÉDICO */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    padding: 28px 24px 40px;
+    width: 100%;
+    max-width: 600px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.open .modal {
+    transform: translateY(0);
+  }
+
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--azul);
+    margin-bottom: 20px;
+  }
+
+  .modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .btn-guardar-medico {
+    width: 100%;
+    padding: 14px;
+    background: var(--azul);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--gris-borde);
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <svg class="logo-dots" viewBox="0 0 38 38" fill="none">
+    <circle cx="19" cy="4" r="2.5" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="26" cy="6" r="2.5" fill="rgba(255,255,255,0.4)"/>
+    <circle cx="32" cy="11" r="2.5" fill="rgba(255,255,255,0.5)"/>
+    <circle cx="34" cy="19" r="2.5" fill="rgba(255,255,255,0.6)"/>
+    <circle cx="32" cy="27" r="2.5" fill="rgba(255,255,255,0.5)"/>
+    <circle cx="26" cy="32" r="2.5" fill="rgba(255,255,255,0.4)"/>
+    <circle cx="19" cy="34" r="2.5" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="12" cy="32" r="2.5" fill="rgba(255,255,255,0.4)"/>
+    <circle cx="6" cy="27" r="2.5" fill="rgba(255,255,255,0.5)"/>
+    <circle cx="4" cy="19" r="2.5" fill="rgba(255,255,255,0.6)"/>
+    <circle cx="6" cy="11" r="2.5" fill="rgba(255,255,255,0.5)"/>
+    <circle cx="12" cy="6" r="2.5" fill="rgba(255,255,255,0.4)"/>
+    <rect x="14" y="14" width="5" height="5" rx="1" fill="#22c55e"/>
+    <rect x="20" y="14" width="5" height="5" rx="1" fill="#22c55e"/>
+    <rect x="14" y="20" width="5" height="5" rx="1" fill="#22c55e"/>
+    <rect x="20" y="20" width="5" height="5" rx="1" fill="rgba(34,197,94,0.4)"/>
+  </svg>
+  <div class="header-text">
+    <h1>CPM Historia Clínica</h1>
+    <p>Clínica Privada Modelo · Río Tercero</p>
+  </div>
+  <span class="header-badge">Demo</span>
+</div>
+
+<div class="main">
+
+  <!-- MÉDICO -->
+  <div class="card">
+    <div class="card-title">Médico</div>
+    <div id="medico-saved" class="medico-saved" style="display:none">
+      <div class="medico-info">
+        <h3 id="medico-nombre-display">—</h3>
+        <p id="medico-especialidad-display">—</p>
+      </div>
+      <button class="btn-cambiar" onclick="abrirModalMedico()">Cambiar</button>
+    </div>
+    <div id="medico-vacio" style="display:none">
+      <button class="btn-adjuntar" onclick="abrirModalMedico()">
+        <span>👤</span> Configurar médico
+      </button>
+    </div>
+  </div>
+
+  <!-- PACIENTE -->
+  <div class="card">
+    <div class="card-title">Paciente</div>
+    <div class="field-group">
+      <div class="field">
+        <label>Nombre completo</label>
+        <input type="text" id="paciente-nombre" placeholder="Ej: García Juan Carlos">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>DNI</label>
+          <input type="text" id="paciente-dni" placeholder="Ej: 32456789">
+        </div>
+        <div class="field">
+          <label>Fecha</label>
+          <div class="fecha-display">
+            <span class="fecha-icon">📅</span>
+            <span id="fecha-auto">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DICTADO -->
+  <div class="card">
+    <div class="card-title">Evolución</div>
+    <div class="grabador">
+
+      <div class="wave-container" id="wave-container">
+        <div class="wave-status">
+          <div class="wave-dot"></div>
+          <span>Grabando</span>
+        </div>
+      </div>
+
+      <button class="btn-grabar idle" id="btn-grabar" onclick="toggleGrabacion()">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+        <span id="btn-grabar-texto">Iniciar dictado</span>
+      </button>
+
+      <div class="evolucion-area">
+        <textarea id="evolucion" placeholder="El texto transcripto aparecerá aquí. También podés escribir directamente..."></textarea>
+        <div class="char-count"><span id="char-count">0</span> caracteres</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADJUNTOS -->
+  <div class="card">
+    <div class="card-title">Adjuntos</div>
+    <div class="adjuntos-grid" id="adjuntos-grid"></div>
+    <button class="btn-adjuntar" onclick="document.getElementById('file-input').click()">
+      <span>📎</span> Adjuntar foto o PDF
+    </button>
+    <input type="file" id="file-input" accept="image/*,.pdf" multiple onchange="agregarAdjuntos(this)">
+  </div>
+
+  <!-- ENVIAR -->
+  <button class="btn-enviar" id="btn-enviar" onclick="enviar()">
+    Enviar historia clínica
+  </button>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL MÉDICO -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModalSiFuera(event)">
+  <div class="modal">
+    <h2>Configurar médico</h2>
+    <div class="modal-fields">
+      <div class="field">
+        <label>Nombre y apellido</label>
+        <input type="text" id="modal-nombre" placeholder="Ej: Torres Cecilia">
+      </div>
+      <div class="field">
+        <label>Especialidad</label>
+        <input type="text" id="modal-especialidad" placeholder="Ej: Clínica Médica, Urología...">
+      </div>
+    </div>
+    <button class="btn-guardar-medico" onclick="guardarMedico()">Guardar</button>
+  </div>
+</div>
+
+<script>
+const N8N_URL = 'https://n8n-production-0142.up.railway.app/webhook/historia-clinica';
+
+// ── FECHA ──
+function setFecha() {
+  const hoy = new Date();
+  const d = String(hoy.getDate()).padStart(2,'0');
+  const m = String(hoy.getMonth()+1).padStart(2,'0');
+  const y = hoy.getFullYear();
+  document.getElementById('fecha-auto').textContent = `${d}/${m}/${y}`;
+}
+setFecha();
+
+// ── MÉDICO ──
+function cargarMedico() {
+  const nombre = localStorage.getItem('cpm_medico_nombre');
+  const especialidad = localStorage.getItem('cpm_medico_especialidad');
+  if (nombre) {
+    document.getElementById('medico-nombre-display').textContent = nombre;
+    document.getElementById('medico-especialidad-display').textContent = especialidad || '—';
+    document.getElementById('medico-saved').style.display = 'flex';
+    document.getElementById('medico-vacio').style.display = 'none';
+  } else {
+    document.getElementById('medico-saved').style.display = 'none';
+    document.getElementById('medico-vacio').style.display = 'block';
+  }
+}
+
+function abrirModalMedico() {
+  document.getElementById('modal-nombre').value = localStorage.getItem('cpm_medico_nombre') || '';
+  document.getElementById('modal-especialidad').value = localStorage.getItem('cpm_medico_especialidad') || '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function cerrarModalSiFuera(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+
+function guardarMedico() {
+  const nombre = document.getElementById('modal-nombre').value.trim();
+  const especialidad = document.getElementById('modal-especialidad').value.trim();
+  if (!nombre) { showToast('Ingresá el nombre del médico', 'error'); return; }
+  localStorage.setItem('cpm_medico_nombre', nombre);
+  localStorage.setItem('cpm_medico_especialidad', especialidad);
+  document.getElementById('modal-overlay').classList.remove('open');
+  cargarMedico();
+  showToast('Médico guardado ✓', 'success');
+}
+
+cargarMedico();
+
+// ── CHAR COUNT ──
+document.getElementById('evolucion').addEventListener('input', function() {
+  document.getElementById('char-count').textContent = this.value.length;
+});
+
+// ── ONDAS DE AUDIO ──
+let audioContext, analyser, microphone, animFrameId;
+const NUM_BARS = 40;
+
+function crearBarras() {
+  const container = document.getElementById('wave-container');
+  container.innerHTML = `<div class="wave-status"><div class="wave-dot"></div><span>Grabando</span></div>`;
+  for (let i = 0; i < NUM_BARS; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'wave-bar';
+    bar.style.height = '4px';
+    container.appendChild(bar);
+  }
+}
+
+function animarOndas() {
+  const bars = document.querySelectorAll('.wave-bar');
+  const dataArray = new Uint8Array(analyser.frequencyBinCount);
+  
+  function draw() {
+    animFrameId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+    const step = Math.floor(dataArray.length / NUM_BARS);
+    bars.forEach((bar, i) => {
+      const value = dataArray[i * step] / 255;
+      const height = Math.max(4, value * 60);
+      bar.style.height = height + 'px';
+      const green = Math.floor(100 + value * 100);
+      bar.style.background = `rgb(34, ${green + 97}, 94)`;
+    });
+  }
+  draw();
+}
+
+// ── GRABACIÓN ──
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition, grabando = false, transcripcionCompleta = '';
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-AR';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        transcripcionCompleta += ' ' + e.results[i][0].transcript;
+        document.getElementById('evolucion').value = transcripcionCompleta.trim();
+        document.getElementById('char-count').textContent = transcripcionCompleta.trim().length;
+      }
+    }
+  };
+
+  recognition.onend = () => {
+    if (grabando) {
+      try { recognition.start(); } catch(e) {}
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      showToast('Permiso de micrófono denegado', 'error');
+      detenerGrabacion();
+    }
+  };
+}
+
+async function toggleGrabacion() {
+  if (!grabando) {
+    await iniciarGrabacion();
+  } else {
+    detenerGrabacion();
+  }
+}
+
+async function iniciarGrabacion() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
+
+    crearBarras();
+    animarOndas();
+
+    const container = document.getElementById('wave-container');
+    container.classList.add('activo');
+
+    grabando = true;
+    transcripcionCompleta = document.getElementById('evolucion').value;
+
+    const btn = document.getElementById('btn-grabar');
+    btn.className = 'btn-grabar grabando';
+    document.getElementById('btn-grabar-texto').textContent = 'Detener dictado';
+
+    if (recognition) recognition.start();
+
+  } catch(e) {
+    showToast('No se pudo acceder al micrófono', 'error');
+  }
+}
+
+function detenerGrabacion() {
+  grabando = false;
+
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  if (microphone) microphone.disconnect();
+  if (audioContext) audioContext.close();
+  if (recognition) recognition.stop();
+
+  document.getElementById('wave-container').classList.remove('activo');
+
+  const btn = document.getElementById('btn-grabar');
+  btn.className = 'btn-grabar idle';
+  document.getElementById('btn-grabar-texto').textContent = 'Iniciar dictado';
+}
+
+// ── ADJUNTOS ──
+let adjuntos = [];
+
+function agregarAdjuntos(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const id = Date.now() + Math.random();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      adjuntos.push({ id, name: file.name, type: file.type, data: e.target.result });
+      renderAdjuntos();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderAdjuntos() {
+  const grid = document.getElementById('adjuntos-grid');
+  grid.innerHTML = '';
+  adjuntos.forEach(adj => {
+    const div = document.createElement('div');
+    div.className = 'adjunto-item';
+    if (adj.type.startsWith('image/')) {
+      div.innerHTML = `
+        <img src="${adj.data}" alt="${adj.name}">
+        <button class="btn-remove" onclick="removerAdjunto('${adj.id}')">×</button>
+      `;
+    } else {
+      div.innerHTML = `
+        <div style="text-align:center;padding:8px">
+          <div class="pdf-icon">📄</div>
+          <div class="pdf-name">${adj.name}</div>
+        </div>
+        <button class="btn-remove" onclick="removerAdjunto('${adj.id}')">×</button>
+      `;
+    }
+    grid.appendChild(div);
+  });
+}
+
+function removerAdjunto(id) {
+  adjuntos = adjuntos.filter(a => String(a.id) !== String(id));
+  renderAdjuntos();
+}
+
+// ── ENVIAR ──
+async function enviar() {
+  const pacienteNombre = document.getElementById('paciente-nombre').value.trim();
+  const pacienteDni = document.getElementById('paciente-dni').value.trim();
+  const evolucion = document.getElementById('evolucion').value.trim();
+  const medicoNombre = localStorage.getItem('cpm_medico_nombre');
+
+  if (!medicoNombre) { showToast('Configurá el médico primero', 'error'); abrirModalMedico(); return; }
+  if (!pacienteNombre) { showToast('Ingresá el nombre del paciente', 'error'); return; }
+  if (!pacienteDni) { showToast('Ingresá el DNI del paciente', 'error'); return; }
+  if (!evolucion) { showToast('La evolución está vacía', 'error'); return; }
+
+  const btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const hoy = new Date();
+  const fecha = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
+
+  const payload = {
+    fecha,
+    medico: medicoNombre,
+    especialidad: localStorage.getItem('cpm_medico_especialidad') || '',
+    paciente_nombre: pacienteNombre,
+    paciente_dni: pacienteDni,
+    evolucion,
+    adjuntos: adjuntos.map(a => ({ name: a.name, type: a.type, data: a.data })),
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await fetch(N8N_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('Historia clínica enviada ✓', 'success');
+    // Limpiar
+    document.getElementById('paciente-nombre').value = '';
+    document.getElementById('paciente-dni').value = '';
+    document.getElementById('evolucion').value = '';
+    document.getElementById('char-count').textContent = '0';
+    adjuntos = [];
+    renderAdjuntos();
+    transcripcionCompleta = '';
+  } catch(e) {
+    showToast('Error al enviar. Verificá la conexión.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Enviar historia clínica';
+}
+
+// ── TOAST ──
+function showToast(msg, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
