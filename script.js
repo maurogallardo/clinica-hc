@@ -77,7 +77,9 @@ function animarOndas() {
         animFrameId = requestAnimationFrame(draw);
         analyser.getByteFrequencyData(dataArray);
         const bars = document.querySelectorAll('.wave-bar');
-        const step = Math.floor(dataArray.length / NUM_BARS);
+        // Usamos solo los primeros 150 bins donde está la voz humana
+        const rango = 150;
+        const step = Math.floor(rango / NUM_BARS);
         bars.forEach((bar, i) => {
             const value = dataArray[i * step] / 255;
             const height = Math.max(4, value * 60);
