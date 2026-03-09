@@ -1,4 +1,5 @@
-const N8N_URL = 'https://n8n-production-0142.up.railway.app/webhook/historia-clinica';
+const N8N_AUDIO_URL = 'https://n8n-production-0142.up.railway.app/webhook/historia-clinica-audio';
+const N8N_ENVIAR_URL = 'https://n8n-production-0142.up.railway.app/webhook/historia-clinica';
 
 // ── FECHA ──
 function setFecha() {
@@ -72,12 +73,10 @@ function crearBarras() {
 
 function animarOndas() {
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
     function draw() {
         animFrameId = requestAnimationFrame(draw);
         analyser.getByteFrequencyData(dataArray);
         const bars = document.querySelectorAll('.wave-bar');
-        // Usamos solo los primeros 150 bins donde está la voz humana
         const rango = 150;
         const step = Math.floor(rango / NUM_BARS);
         bars.forEach((bar, i) => {
@@ -91,43 +90,8 @@ function animarOndas() {
     draw();
 }
 
-// ── SPEECH RECOGNITION ──
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition, grabando = false, transcripcionCompleta = '';
-
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'es-AR';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (e) => {
-        let interino = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-            if (e.results[i].isFinal) {
-                transcripcionCompleta += ' ' + e.results[i][0].transcript;
-            } else {
-                interino += e.results[i][0].transcript;
-            }
-        }
-        const textoMostrado = (transcripcionCompleta + ' ' + interino).trim();
-        document.getElementById('evolucion').value = textoMostrado;
-        document.getElementById('char-count').textContent = textoMostrado.length;
-    };
-
-    recognition.onend = () => {
-        if (grabando) {
-            try { recognition.start(); } catch (e) { }
-        }
-    };
-
-    recognition.onerror = (e) => {
-        if (e.error === 'not-allowed') {
-            showToast('Permiso de micrófono denegado', 'error');
-            detenerGrabacion();
-        }
-    };
-}
+// ── MEDIA RECORDER ──
+let mediaRecorder, audioChunks = [], grabando = false, stream;
 
 async function toggleGrabacion() {
     if (!grabando) {
@@ -139,26 +103,33 @@ async function toggleGrabacion() {
 
 async function iniciarGrabacion() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Ondas visuales
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
         analyser.fftSize = 1024;
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
-
         crearBarras();
         animarOndas();
-
         document.getElementById('wave-container').classList.add('activo');
 
-        grabando = true;
-        transcripcionCompleta = document.getElementById('evolucion').value;
+        // MediaRecorder
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = async () => {
+            await procesarAudio();
+        };
+        mediaRecorder.start();
 
+        grabando = true;
         const btn = document.getElementById('btn-grabar');
         btn.className = 'btn-grabar grabando';
         document.getElementById('btn-grabar-texto').textContent = 'Detener dictado';
-
-        if (recognition) recognition.start();
 
     } catch (e) {
         showToast('No se pudo acceder al micrófono', 'error');
@@ -171,9 +142,45 @@ function detenerGrabacion() {
     if (animFrameId) cancelAnimationFrame(animFrameId);
     if (microphone) microphone.disconnect();
     if (audioContext) audioContext.close();
-    if (recognition) recognition.stop();
+    if (stream) stream.getTracks().forEach(t => t.stop());
 
     document.getElementById('wave-container').classList.remove('activo');
+
+    const btn = document.getElementById('btn-grabar');
+    btn.className = 'btn-grabar procesando';
+    document.getElementById('btn-grabar-texto').textContent = 'Transcribiendo...';
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+}
+
+async function procesarAudio() {
+    try {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('data', blob, 'audio.webm');
+
+        const response = await fetch(N8N_AUDIO_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        const texto = result.texto || result.text || '';
+
+        if (texto) {
+            const actual = document.getElementById('evolucion').value;
+            document.getElementById('evolucion').value = actual ? actual + ' ' + texto : texto;
+            document.getElementById('char-count').textContent = document.getElementById('evolucion').value.length;
+            showToast('Transcripción lista ✓', 'success');
+        } else {
+            showToast('No se detectó audio', 'error');
+        }
+
+    } catch (e) {
+        showToast('Error al transcribir', 'error');
+    }
 
     const btn = document.getElementById('btn-grabar');
     btn.className = 'btn-grabar idle';
@@ -257,7 +264,7 @@ async function enviar() {
     };
 
     try {
-        await fetch(N8N_URL, {
+        await fetch(N8N_ENVIAR_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -269,7 +276,6 @@ async function enviar() {
         document.getElementById('char-count').textContent = '0';
         adjuntos = [];
         renderAdjuntos();
-        transcripcionCompleta = '';
     } catch (e) {
         showToast('Error al enviar. Verificá la conexión.', 'error');
     }
